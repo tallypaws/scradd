@@ -3,7 +3,6 @@ import { JSDOM } from "jsdom";
 // import canvas from "@napi-rs/canvas";
 import canva from "canvas";
 import { defineChatCommand } from "strife.js";
-import { ApplicationCommandOptionType } from "discord.js";
 import { resolve } from "path";
 // import { defineEvent } from 'strife.js';
 canva.registerFont(resolve("./Helvetica.otf"), { family: "helvetica" });
@@ -85,15 +84,62 @@ defineChatCommand(
 	{
 		name: "blocks",
 		description: "Generate an image of scratchblocks",
-		options: {
-			blocks: {
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				description: "the text to uses  while generating",
-			},
-		},
+		
 	},
-	async (i, o) => {
-		i.reply({ files: [await scratchBlocksToImage(o.blocks, "3")] });
+	async (i) => {
+		// i.reply({ files: [await scratchBlocksToImage(o.blocks, "3")] });
+		const modal = {
+			title: "Generate Scratchblocks Image",
+			custom_id: "scratchblocks_modal",
+			components: [
+				{
+					type: 1,
+					components: [
+						{
+							type: 4,
+							custom_id: "blocks_input",
+							label: "Enter Scratchblocks",
+							style: 2, 
+							required: true,
+							placeholder: "Type your Scratchblocks code here...",
+						},
+					],
+				},
+			],
+		};
+
+		await i.showModal(modal);
+		const modalSubmit = await i.awaitModalSubmit({
+			time: 0
+		})
+		const blocks = modalSubmit.components[0]?.components[0]?.value
+		if (!blocks) return
+		modalSubmit.reply({ files: [await scratchBlocksToImage(blocks, "3")] });
+
 	},
 );
+
+defineChatCommand({
+	name:"help",
+	description: "How to use this bot"
+}, (i) => {
+	i.reply({
+		ephemeral: true,
+		content: `
+
+## [Syntax Guide](https://www.en.scratch-wiki.info/wiki/Block_Plugin)
+
+## How to Use Blocks 
+
+Use code formatting like this:
+
+\\\`\\\`\\\`sb
+<your code here>  
+\\\`\\\`\\\`
+
+the \`sb\` part is required for the bot to recognize you want a scratch blocks embed
+
+Or, just use the \`/blocks\` command! 
+`
+	})
+})
