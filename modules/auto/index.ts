@@ -58,9 +58,9 @@ async function handleMutatable(
 	if (blocks.length > 0) {
 		const files = await Promise.all(
 			blocks.map(async (block) => {
-				const type ="3"; // Default to "3" if type is missing
+				const type = block[1] ?? "3"; // Default to "3" if type is missing
 				const content = block[2] || block[1]; // Use block[1] content if no block[2]
-				return await scratchBlocksToImage(content ?? "", type);
+				return await scratchBlocksToImage(content ?? "", type, "LineFont");
 			}),
 		);
 

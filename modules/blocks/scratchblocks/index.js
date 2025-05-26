@@ -165,5 +165,6 @@ export default function (window) {
 
     appendStyles: appendStyles,
     scratch3: scratch3,
+    scratch2: scratch2
   }
 }

@@ -10,7 +10,7 @@
 		"dev": "npm run serve & npm run watch",
 		"format": "prettier --write \"**\" --ignore-path .prettierignore --ignore-unknown --cache",
 		"lint": "eslint .",
-		"serve": "nodemon --env-file=.env --enable-source-maps . --ext js,json,html,css,png",
+		"serve": "nodemon --env-file=.dev.env --enable-source-maps . --ext js,css,png",
 		"start": "node --env-file=.env --enable-source-maps .",
 		"test": "npm run build && node --enable-source-maps --test",
 		"watch": "tsc --project tsconfig.json --watch"
@@ -45,7 +45,9 @@
 		"posthtml-parser": "0.12.0",
 		"scratchlink": "^3.1.1",
 		"serialize-error": "11.0.3",
-		"strife.js": "4.0.1"
+		"strife.js": "^4.0.1",
+		"surrealdb": "^1.3.2",
+		"zod": "^3.24.4"
 	},
 	"devDependencies": {
 		"@flydotio/dockerfile": "^0.5.7",

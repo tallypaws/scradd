@@ -4,3 +4,4 @@
 .env
 *.tsbuildinfo
 # /musicfiles/
+*.env

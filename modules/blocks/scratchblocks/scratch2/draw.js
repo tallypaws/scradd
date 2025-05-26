@@ -277,7 +277,7 @@ export default class SVG {
         "M",
         0,
         12,
-        SVG.arc(0, 12, 80, 10, 80, 80),
+        SVG.arc(0, 12, 80, 10, 80, 80), // Ensure SVG.arc is implemented below
         "L",
         w - 3,
         10,
@@ -288,6 +288,10 @@ export default class SVG {
         "Z",
       ],
     })
+  }
+
+  static arc(x1, y1, x2, y2, rx, ry) {
+    return `A ${rx} ${ry} 0 0 1 ${x2} ${y2}`;
   }
 
   static catHat(w, h, props) {

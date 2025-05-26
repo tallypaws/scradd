@@ -46,9 +46,9 @@ export class LabelView {
 
   measure() {
     const value = this.value
-    const cls = `sb3-${this.cls}`
+    const cls = `-${this.cls}`
     this.el = SVG.text(0, 13, value, {
-      class: `sb3-label ${cls}`,
+      class: `sb2-label ${cls}`,
     })
 
     let cache = LabelView.metricsCache[cls]
@@ -93,7 +93,7 @@ export class IconView {
   }
 
   draw(iconStyle) {
-    return SVG.symbol(`#sb3-${iconName(this.name, iconStyle)}`, {
+    return SVG.symbol(`#-${iconName(this.name, iconStyle)}`, {
       width: this.width,
       height: this.height,
     })
@@ -140,7 +140,7 @@ export class LineView {
   draw(_iconStyle, parent) {
     const category = parent.info.category
     return SVG.el("line", {
-      class: `sb3-${category}-line`,
+      class: `sb2-${category}-line`,
       "stroke-linecap": "round",
       x1: 0,
       y1: 0,
@@ -214,8 +214,8 @@ export class InputView {
     const el = InputView.shapes[this.shape](w, h)
     SVG.setProps(el, {
       class: `${
-        this.isColor ? "" : `sb3-${parent.info.category}`
-      } sb3-input sb3-input-${this.shape}`,
+        this.isColor ? "" : `-${parent.info.category}`
+      } sb2-input sb2-input-${this.shape}`,
     })
 
     if (this.isColor) {
@@ -231,7 +231,7 @@ export class InputView {
         })
       }
     } else if (this.shape === "number-dropdown") {
-      el.classList.add(`sb3-${parent.info.category}-alt`)
+      el.classList.add(`-${parent.info.category}-alt`)
 
       // custom colors
       if (parent.info.color) {
@@ -241,8 +241,8 @@ export class InputView {
         })
       }
     } else if (this.shape === "boolean") {
-      el.classList.remove(`sb3-${parent.info.category}`)
-      el.classList.add(`sb3-${parent.info.category}-dark`)
+      el.classList.remove(`-${parent.info.category}`)
+      el.classList.add(`-${parent.info.category}-dark`)
 
       // custom colors
       if (parent.info.color) {
@@ -263,8 +263,8 @@ export class InputView {
           13,
           SVG.symbol(
             iconStyle === "high-contrast"
-              ? "#sb3-dropdownArrow-high-contrast"
-              : "#sb3-dropdownArrow",
+              ? "#-dropdownArrow-high-contrast"
+              : "#-dropdownArrow",
             {},
           ),
         ),
@@ -340,14 +340,14 @@ class BlockView {
     // mouths
     if (lines.length > 1) {
       return SVG.mouthRect(w, h, this.isFinal, lines, {
-        class: `sb3-${this.info.category}`,
+        class: `sb2-${this.info.category}`,
       })
     }
 
     // outlines
     if (this.info.shape === "outline") {
       return SVG.setProps(SVG.stackRect(w, h), {
-        class: `sb3-${this.info.category} sb3-${this.info.category}-alt`,
+        class: `-${this.info.category} -${this.info.category}-alt`,
       })
     }
 
@@ -356,7 +356,7 @@ class BlockView {
       const child = this.children[0]
       if (child && (child.isInput || child.isBlock || child.isScript)) {
         return SVG.roundRect(w, h, {
-          class: `sb3-${this.info.category}`,
+          class: `sb2-${this.info.category}`,
         })
       }
     }
@@ -366,7 +366,7 @@ class BlockView {
       throw new Error(`no shape func: ${this.info.shape}`)
     }
     return func(w, h, {
-      class: `sb3-${this.info.category}`,
+      class: `sb2-${this.info.category}`,
     })
   }
 
@@ -651,7 +651,7 @@ export class CommentView {
     return SVG.group([
       SVG.commentLine(this.hasBlock ? CommentView.lineLength : 0, 6),
       SVG.commentRect(this.width, this.height, {
-        class: "sb3-comment",
+        class: "sb2-comment",
       }),
       SVG.move(8, 4, labelEl),
     ])
@@ -693,7 +693,7 @@ class GlowView {
       el = c.drawSelf(w, h, [])
     }
     return SVG.setProps(el, {
-      class: "sb3-diff sb3-diff-ins",
+      class: "sb2-diff sb2-diff-ins",
     })
   }
   // TODO how can we always raise Glows above their parents?

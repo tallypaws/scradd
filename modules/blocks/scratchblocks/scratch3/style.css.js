@@ -1,8 +1,15 @@
 // Processed by Rollup
+function isAprilFools() {
+  const today = new Date();
+  return today.getMonth() === 3 && today.getDate() === 1;
+}
 
-const common = `
+const common = (font) => `
 .sb3-label {
-  font: 500 12pt Helvetica Neue, Helvetica, sans-serif;
+  font-weight: 500 !important;
+font-size: 12pt !important;
+font-family: ${font}, sans-serif;
+
   word-spacing: +1pt;
 }
 
@@ -220,7 +227,22 @@ const highContrastStyle = {
   greyTertiary: "#959595",
 }
 
-export default common +
-  create("", originalStyle) +
-  create(".scratchblocks-style-scratch3-high-contrast", highContrastStyle) +
-  commonOverride
+const obj = {};
+
+Object.defineProperty(obj, 'styles', {
+  get() {
+    return common() +
+    create("", originalStyle) +
+    create(".scratchblocks-style-scratch3-high-contrast", highContrastStyle) +
+    commonOverride;
+  }
+});
+
+export default {
+   styles(font) {
+    return common(font) +
+      create("", originalStyle) +
+      create(".scratchblocks-style-scratch3-high-contrast", highContrastStyle) +
+      commonOverride;
+  }
+};

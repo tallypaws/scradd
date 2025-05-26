@@ -39,19 +39,20 @@ await login({
 	clientOptions: {
 		intents:
 			GatewayIntentBits.Guilds |
-			GatewayIntentBits.GuildMembers |
-			GatewayIntentBits.GuildModeration |
-			GatewayIntentBits.GuildEmojisAndStickers |
-			GatewayIntentBits.GuildWebhooks |
-			GatewayIntentBits.GuildInvites |
-			GatewayIntentBits.GuildVoiceStates |
-			GatewayIntentBits.GuildPresences |
+			// GatewayIntentBits.GuildMembers |
+			// GatewayIntentBits.GuildModeration |
+			// GatewayIntentBits.GuildEmojisAndStickers |
+			// GatewayIntentBits.GuildWebhooks |
+			// GatewayIntentBits.GuildInvites |
+			// GatewayIntentBits.GuildVoiceStates |
+			// GatewayIntentBits.GuildPresences |
 			GatewayIntentBits.GuildMessages |
-			GatewayIntentBits.GuildMessageReactions |
+			// GatewayIntentBits.GuildMessageReactions |
 			GatewayIntentBits.DirectMessages |
-			GatewayIntentBits.MessageContent |
-			GatewayIntentBits.GuildScheduledEvents |
-			GatewayIntentBits.AutoModerationExecution,
+			GatewayIntentBits.MessageContent
+			// GatewayIntentBits.GuildScheduledEvents 
+			// GatewayIntentBits.AutoModerationExecution
+			,
 		presence: { status: "dnd" },
 	},
 	commandErrorMessage: `An error occurred.`,
