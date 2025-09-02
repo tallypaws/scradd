@@ -1,0 +1,18 @@
+services:
+  blocks:
+    build: 
+      context: .
+      network: host
+    container_name: blocks
+    env_file:
+      - .env
+    command: node --enable-source-maps ./dist/index.js
+    restart: unless-stopped
+    environment:
+      - SURREAL_URI=ws://surrealdb:9000/rpc
+      - NODE_ENV=production
+    networks:
+      - surrealdb-net
+networks:
+  surrealdb-net:
+    external: true

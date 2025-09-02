@@ -6,21 +6,26 @@ import path from "path";
 const db = new Surreal();
 
 async function connectDB() {
-  try {
-    await db.connect(process.env.SURREAL_URI ?? "ws://127.0.0.1:8000/rpc", {
-      namespace: "blocks",
-      database: process.env.NODE_ENV === "development" ? "blocksdev" : "blocks",
-      auth: { username: "root", password: "root" },
-    });
-    console.log("Connected to db");
-  } catch (error) {
-    console.error("Failed to connect to db", error);
-    process.exit(1);
-  }
+	while (true) {
+		try {
+			await db.connect(process.env.SURREAL_URI ?? "ws://192.168.0.7:8000/rpc", {
+				namespace: "blocks",
+				database: "blocks",
+				auth: { username: "root", password: "root" },
+			});
+			console.log("Connected to DB");
+			break;
+		} catch (error: any) {
+			// console.error("Failed to connect to DB", error.message);
+			console.log("Waiting for DB...");
+			await new Promise((resolve) => setTimeout(resolve, 2500));
+		}
+	}
 }
 
 await connectDB();
-console.log(process.env.NODE_ENV)
+
+await connectDB();
 async function writeJSON(tb: string, id: string, data: any) {
   console.log("writing", tb, "/", id)
   const dir = path.join(process.cwd(), "./devdata");

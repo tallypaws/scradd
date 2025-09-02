@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"baseUrl": "./",
@@ -12,7 +13,8 @@
 		"isolatedModules": true,
 		"jsx": "preserve",
 		"lib": ["es2023"],
-		"module": "NodeNext",
+		"module": "ES2022",
+		"moduleResolution": "Node",
 		"noEmitOnError": true,
 		"noErrorTruncation": true,
 		"noImplicitOverride": true,
@@ -22,6 +24,7 @@
 		"outDir": "dist",
 		"removeComments": true,
 		"resolveJsonModule": true,
+		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
 		"stripInternal": true,
@@ -29,8 +32,8 @@
 		"paths": {
 			"*": ["./common/typedefs/*.d.ts", "./node_modules/@types/*", "./node_modules/*"]
 		},
-		"types": ["node"],
-		"verbatimModuleSyntax": true
+		"types": ["node"]
+		// "verbatimModuleSyntax": true
 	},
 	"exclude": ["./node_modules", "./.git", "./dist"],
 	"typeAcquisition": { "enable": true }
