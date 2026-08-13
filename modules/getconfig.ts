@@ -9,7 +9,7 @@ const configSchema = z.object({
 });
 
 const configDB = await DBMap.create({
-	name: "server-config",
+	name: "serverconfig",
 	defaultV: {
 		channels: {
 			list: [],
