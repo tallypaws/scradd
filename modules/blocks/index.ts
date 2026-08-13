@@ -7,6 +7,7 @@ import { extname } from "path";
 import { ApplicationCommandType, ComponentType, MessageFlags } from "discord.js";
 import { getFontForUser, getMessageMap, messageDB, userSettingsDB } from "../getconfig.js";
 import { writeFileSync } from "fs";
+import { transaction } from "../../common/db/index.js";
 let fetchedFonts: Record<string, string> = {
 	"Helvetica": resolve("./fonts/Helvetica.otf"),
 	"Comic Sans MS": resolve("./fonts/ComicSans.otf"),
@@ -55,7 +56,7 @@ async function fetchAndSaveFont(fontName: string): Promise<string> {
 	if (!fontUrl) throw new Error("Font URL is undefined");
 
 	await mkdir(outDir, { recursive: true });
-	await writeFile(outPath, Buffer.from((fontData)));
+	await writeFile(outPath, Buffer.from(fontData) as any);
 	canva.registerFont(resolve(outPath), { family: fontName });
 
 	return outPath;
@@ -238,14 +239,11 @@ defineChatCommand(
 				),
 			],
 		});
-		messageDB.update(
-			i.channelId,
-			(map) => {
-				map.set(message.id, blocks);
-				return map;
-			},
-			false,
-		);
+		const trans = await transaction();
+		const stored = await messageDB.get(i.channelId, trans);
+		stored[message.id] = blocks;
+		await messageDB.set(i.channelId, stored, trans);
+		await trans.commit();
 	},
 );
 
@@ -256,9 +254,10 @@ defineChatCommand(
 	},
 	(i) => {
 		const fontNames = Object.keys(fonts);
-		const fontList = fontNames.length > 1 
-			? fontNames.slice(0, -1).join(", ") + " and " + fontNames[fontNames.length - 1]
-			: fontNames[0];
+		const fontList =
+			fontNames.length > 1 ?
+				fontNames.slice(0, -1).join(", ") + " and " + fontNames[fontNames.length - 1]
+			:	fontNames[0];
 
 		i.reply({
 			ephemeral: true,
@@ -324,7 +323,7 @@ defineMenuCommand(
 				content: "You can't edit this message!",
 			});
 		const messageMap = await getMessageMap(message.channelId);
-		const blocks = messageMap.get(message.id);
+		const blocks = messageMap[message.id];
 		await interaction.showModal({
 			custom_id: "edit",
 			title: "meow",
@@ -370,14 +369,14 @@ defineMenuCommand(
 		await message.edit({
 			files: [await scratchBlocksToImage(newBlocks, "3", fontOverride ?? font)],
 		});
-		messageDB.update(
-			message.channelId,
-			(map) => {
-				map.set(message.id, newBlocks);
-				return map;
-			},
-			false,
-		);
+
+		const trans = await transaction();
+		const stored = await messageDB.get(message.channelId, trans);
+
+		if (blocks) stored[message.id] = newBlocks;
+
+		await messageDB.set(message.channelId, stored, trans);
+		await trans.commit();
 	},
 );
 
@@ -399,14 +398,12 @@ defineMenuCommand(
 			flags: MessageFlags.Ephemeral,
 			content: "Deleted",
 		});
-		messageDB.update(
-			message.channelId,
-			(map) => {
-				map.delete(message.id);
-				return map;
-			},
-			false,
-		);
+
+		const trans = await transaction();
+		const stored = await messageDB.get(message.channelId, trans);
+		delete stored[message.id];
+		await messageDB.set(message.channelId, stored, trans);
+		await trans.commit();
 	},
 );
 
@@ -544,14 +541,11 @@ client.on("interactionCreate", async (interaction) => {
 	if (customId.startsWith("usersettings-style-")) {
 		const newStyle = customId.replace("usersettings-style-", "") as "sb2" | "sb3" | "sb3hc";
 
-		await userSettingsDB.update(
-			interaction.user.id,
-			(current) => ({
-				...current,
-				defaultStyle: newStyle,
-			}),
-			true,
-		);
+		const trans = await transaction();
+		const stored = await userSettingsDB.get(interaction.user.id, trans);
+		stored.defaultStyle = newStyle;
+		await userSettingsDB.set(interaction.user.id, stored, trans);
+		await trans.commit();
 
 		const updatedSettings = await getFontForUser(interaction.user.id);
 		const components = generateUserSettingsComponents(updatedSettings);
@@ -566,14 +560,11 @@ client.on("interactionCreate", async (interaction) => {
 	if (customId.startsWith("usersettings-sb3font-")) {
 		const newFont = customId.replace("usersettings-sb3font-", "");
 
-		await userSettingsDB.update(
-			interaction.user.id,
-			(current) => ({
-				...current,
-				defaultFontSb3: newFont,
-			}),
-			true,
-		);
+		const trans = await transaction();
+		const stored = await userSettingsDB.get(interaction.user.id, trans);
+		stored.defaultFontSb3 = newFont;
+		await userSettingsDB.set(interaction.user.id, stored, trans);
+		await trans.commit();
 
 		const updatedSettings = await getFontForUser(interaction.user.id);
 		const components = generateUserSettingsComponents(updatedSettings);
@@ -588,14 +579,11 @@ client.on("interactionCreate", async (interaction) => {
 	if (customId.startsWith("usersettings-sb2font-")) {
 		const newFont = customId.replace("usersettings-sb2font-", "");
 
-		await userSettingsDB.update(
-			interaction.user.id,
-			(current) => ({
-				...current,
-				defaultFontSb2: newFont,
-			}),
-			true,
-		);
+		const trans = await transaction();
+		const stored = await userSettingsDB.get(interaction.user.id, trans);
+		stored.defaultFontSb2 = newFont;
+		await userSettingsDB.set(interaction.user.id, stored, trans);
+		await trans.commit();
 
 		const updatedSettings = await getFontForUser(interaction.user.id);
 		const components = generateUserSettingsComponents(updatedSettings);

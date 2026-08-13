@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DB } from "../common/database.js";
+import { DBMap } from "../common/db/map.js";
 
 const configSchema = z.object({
 	channels: z.object({
@@ -8,43 +8,49 @@ const configSchema = z.object({
 	}),
 });
 
-const configDB = new DB(
-	"server-config",
-	{
+const configDB = await DBMap.create({
+	name: "server-config",
+	defaultV: {
 		channels: {
 			list: [],
 			isWhitelist: false,
 		},
 	},
-	configSchema,
-);
+	schema: configSchema,
+});
 
-export const messageSchema = z.map(z.string(), z.string());
+export const messageSchema = z.record(z.string(), z.string());
 
-export const messageDB = new DB("messages", new Map(), messageSchema);
+export const messageDB = await DBMap.create({
+	name: "messages",
+	defaultV: {},
+	schema: messageSchema,
+});
 
 export const userSettingsSchema = z.object({
 	defaultFontSb3: z.string(),
 	defaultFontSb2: z.string(),
-	defaultStyle: z.enum(["sb3", "sb2", "sb3hc"])
-})
+	defaultStyle: z.enum(["sb3", "sb2", "sb3hc"]),
+});
 
-export const userSettingsDB = new DB("usersettings", {
-	defaultFontSb2: "LucidaGrande",
-	defaultFontSb3: "Helvetica",
-	defaultStyle: "sb3"
-}, userSettingsSchema)
+export const userSettingsDB = await DBMap.create({
+	name: "usersettings",
+	defaultV: {
+		defaultFontSb2: "LucidaGrande",
+		defaultFontSb3: "Helvetica",
+		defaultStyle: "sb3",
+	},
+	schema: userSettingsSchema,
+});
 
 export async function getMessageMap(channelId: string) {
-    return messageDB.getData(channelId);
+	return messageDB.get(channelId);
 }
 
 export default async function getConfig(guildId: string) {
-	return configDB.getData(guildId);
+	return configDB.get(guildId);
 }
 
-export async function getFontForUser(userId:string) {
-return userSettingsDB.getData(userId)
+export async function getFontForUser(userId: string) {
+	return userSettingsDB.get(userId);
 }
-
-
