@@ -2,7 +2,6 @@ import { CacheHelper } from "./cache.js";
 import {
   Awaitable,
   getSurrealDB,
-  getRedis,
   TallyTransaction
 } from "./index.js";
 import { QueryBuilder } from "./query.js";
@@ -29,7 +28,7 @@ export class DBMap<T extends z.ZodTypeAny, D = z.infer<T> | null> {
         case "CREATE":
         case "UPDATE":
           this.cache.set(
-            [msg.recordId.toString().split(":")[1]],
+            [msg.recordId.toString().split(":")[1]!],
             msg.value.value as any
           );
           break;
@@ -101,7 +100,6 @@ export class DBMap<T extends z.ZodTypeAny, D = z.infer<T> | null> {
     if (transaction) {
       transaction.onCommit(() => {
         this.cache.invalidate([key]);
-        this.publishUpdate(key, data);
       });
       await transaction
         .upsert(new RecordId(this.name, key))
@@ -112,21 +110,18 @@ export class DBMap<T extends z.ZodTypeAny, D = z.infer<T> | null> {
     await getSurrealDB()
       .upsert(new RecordId(this.name, key))
       .content({ value: data });
-    this.publishUpdate(key, data);
   }
 
   async delete(key: string, transaction?: TallyTransaction) {
     if (transaction) {
       transaction.onCommit(() => {
         this.cache.invalidate([key]);
-        this.publishUpdate(key, null);
       });
       await transaction.delete(new RecordId(this.name, key));
       return;
     }
     this.cache.invalidate([key]);
     await getSurrealDB().delete(new RecordId(this.name, key));
-    this.publishUpdate(key, null);
   }
   async allKeys(transaction?: TallyTransaction): Promise<string[]> {
     if (transaction) {
@@ -168,19 +163,7 @@ export class DBMap<T extends z.ZodTypeAny, D = z.infer<T> | null> {
     return sub;
   }
 
-  private redisChannel(): string {
-    return `db-update:${this.name}`;
-  }
 
-  private publishUpdate(key: string, value: z.infer<T> | null) {
-    const redis = getRedis();
-    if (!redis) return;
-    redis
-      .publish(this.redisChannel(), JSON.stringify({ key, value }))
-      .catch((err) => {
-        console.error(`[DBMap:${this.name}] failed to publish update`, err);
-      });
-  }
 
   async subscribeKey(
     key: string,
@@ -196,29 +179,10 @@ export class DBMap<T extends z.ZodTypeAny, D = z.infer<T> | null> {
 
     const cleanups: Array<() => void> = [];
 
-    const redis = getRedis();
-    if (redis) {
-      const subClient = redis.duplicate();
-      await subClient.connect();
-      const channel = this.redisChannel();
-      await subClient.subscribe(channel, (message) => {
-        let parsed: { key: string; value: z.infer<T> | null };
-        try {
-          parsed = JSON.parse(message);
-        } catch {
-          return;
-        }
-        if (parsed.key !== key) return;
-        void deliver(parsed.value);
-      });
-      cleanups.push(() => {
-        void subClient.unsubscribe(channel).catch(() => {});
-        void subClient.quit().catch(() => {});
-      });
-    }
+   
 
     const sub = await this.live(async (msg) => {
-      const recordKey = msg.recordId.toString().split(":")[1];
+      const recordKey = msg.recordId!.toString().split(":")[1];
       if (recordKey !== key) return;
       if (msg.action === "DELETE") {
         await deliver(null);
